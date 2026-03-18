@@ -5,86 +5,589 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>rkdeveloptool Web 版</title>
   <style>
-    body {
-      padding-bottom: 40px;
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --surface3: #2d333b;
+      --border: #30363d;
+      --border-hover: #444c56;
+      --accent: #388bfd;
+      --accent-hover: #58a6ff;
+      --accent-muted: rgba(56, 139, 253, 0.15);
+      --success: #3fb950;
+      --success-hover: #56d364;
+      --warning: #d29922;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --text-bright: #e6edf3;
+      --terminal-bg: #010409;
+      --terminal-text: #56d364;
     }
 
-    footer {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      padding: 8px 12px;
-      background: #fff;
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
     }
+
+    /* ===== Header ===== */
+    .app-header {
+      height: 48px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-bright);
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+    }
+
+    .header-spacer { flex: 1; }
+
+    .header-github {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 12px;
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+    .header-github:hover {
+      color: var(--text);
+      border-color: var(--border-hover);
+      background: var(--surface2);
+    }
+
+    /* ===== Main ===== */
+    .main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 20px 16px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ===== Card ===== */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .card-body { padding: 16px; }
+
+    /* ===== Instructions ===== */
+    details.instructions summary {
+      list-style: none;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      transition: color 0.15s;
+    }
+    details.instructions summary::-webkit-details-marker { display: none; }
+    details.instructions summary:hover { color: var(--text); }
+
+    details.instructions summary .chevron {
+      margin-left: auto;
+      transition: transform 0.2s;
+      opacity: 0.6;
+    }
+    details[open].instructions summary .chevron { transform: rotate(180deg); }
+    details[open].instructions summary { border-bottom: 1px solid var(--border); }
+
+    .instructions-body {
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+    .instructions-body .warn { color: var(--warning); font-weight: 500; }
+    .instructions-body h4 {
+      font-size: 13px;
+      color: var(--text);
+      margin: 10px 0 6px;
+    }
+    .instructions-body ol { margin: 0; padding-left: 24px; }
+    .instructions-body ol li { margin-bottom: 4px; }
+    .instructions-body p { margin: 5px 0; }
+
+    /* ===== File Selection ===== */
+    .file-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 560px) { .file-grid { grid-template-columns: 1fr; } }
+
+    .file-slot {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .file-slot-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .file-slot-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    input[type="file"] { display: none; }
+
+    .file-slot-filename {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'SFMono-Regular', 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+      min-width: 0;
+    }
+    .file-slot-filename.has-file { color: var(--success); }
+
+    /* ===== Device Row ===== */
+    .device-row {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .status-ring {
+      position: relative;
+      width: 10px;
+      height: 10px;
+      flex-shrink: 0;
+    }
+    .status-ring::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--surface3);
+    }
+    .status-ring.connected::before { background: var(--success); }
+    .status-ring.connected::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 2px solid var(--success);
+      opacity: 0.4;
+      animation: ring-pulse 2s ease-out infinite;
+    }
+    @keyframes ring-pulse {
+      0%   { transform: scale(0.8); opacity: 0.6; }
+      70%  { transform: scale(1.4); opacity: 0; }
+      100% { transform: scale(0.8); opacity: 0; }
+    }
+
+    .device-name-text {
+      font-size: 13px;
+      color: var(--text-bright);
+      font-family: 'SFMono-Regular', 'SF Mono', Consolas, monospace;
+    }
+    .device-name-text:empty::before {
+      content: '未连接';
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    /* ===== Buttons ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 20px;
+      color: var(--text);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn:hover:not(:disabled) {
+      background: var(--surface3);
+      border-color: var(--border-hover);
+      color: var(--text-bright);
+    }
+    .btn:active:not(:disabled) { opacity: 0.82; }
+    .btn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+    .btn-sm { padding: 4px 10px; font-size: 12px; line-height: 18px; }
+
+    .btn-primary {
+      color: #fff;
+      background: var(--accent);
+      border-color: transparent;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--accent-hover);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .btn-success {
+      color: #fff;
+      background: var(--success);
+      border-color: transparent;
+    }
+    .btn-success:hover:not(:disabled) {
+      background: var(--success-hover);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    label.btn { cursor: pointer; }
+
+    /* ===== Select ===== */
+    .select-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid var(--text-muted);
+      pointer-events: none;
+    }
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      padding: 6px 26px 6px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 20px;
+      color: var(--text);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      min-width: 118px;
+    }
+    select:hover { background: var(--surface3); border-color: var(--border-hover); }
+    select:focus { outline: none; border-color: var(--accent); }
+
+    /* ===== Action Row ===== */
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* ===== Command Input ===== */
+    .command-row { display: flex; gap: 8px; }
+
+    .command-input {
+      flex: 1;
+      min-width: 0;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-family: 'SFMono-Regular', 'SF Mono', Consolas, monospace;
+      color: var(--text);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+    .command-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-muted);
+    }
+    .command-input::placeholder { color: var(--text-muted); }
+
+    /* ===== Terminal ===== */
+    .terminal-titlebar {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .traffic-lights { display: flex; gap: 6px; flex-shrink: 0; }
+    .tl { width: 12px; height: 12px; border-radius: 50%; }
+    .tl-red    { background: #ff5f57; }
+    .tl-yellow { background: #febc2e; }
+    .tl-green  { background: #28c840; }
+
+    .terminal-label {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      user-select: none;
+    }
+
+    .terminal-actions { display: flex; gap: 6px; align-items: center; }
+
+    #output-action-tip {
+      font-size: 12px;
+      color: var(--success);
+    }
+
+    #output {
+      margin: 0;
+      padding: 14px 16px;
+      background: var(--terminal-bg);
+      color: var(--terminal-text);
+      font-family: 'SFMono-Regular', 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      min-height: 240px;
+      max-height: 420px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    #output::-webkit-scrollbar { width: 8px; height: 8px; }
+    #output::-webkit-scrollbar-track { background: transparent; }
+    #output::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 4px; }
+    #output::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
   </style>
 </head>
 <body>
-  <h1>rkdeveloptool Web 版</h1>
-  <details>
-    <summary style="width: fit-content;">说明</summary>
-    <h3>仅支持 Chrome/Edge 等基于 Chromium 的浏览器</h3>
-    <h5>支持普通磁盘raw镜像（.img）、raw压缩固件（各种开源镜像，如 iStoreOS、OpenWRT 等，扩展名是.img.gz、.img.xz）、RKFW 固件（一般是安卓固件，扩展名也是.img）</h5>
-    <h5>支持大固件刷写，使用流式加载技术+虚拟文件系统，不会把整个固件加载到内存中</h5>
-    <h5>不建议在 Windows 下使用，因为 Windows 下有 Rockchip 官方的图形刷机工具。且可能需要安装 WinUSB 驱动，驱动又可能跟 Rockchip 驱动冲突。自行评估风险</h5>
-    <h4>一般刷机步骤：</h4>
-    <ol>
-      <li>设备进入 MASKROM 或 Loader 模式（通常是开机时按住某个按键，具体请搜索设备型号+MASKROM/Loader）</li>
-      <li>设备通过 USB 连接到电脑（通常是设备的 Type-C 接口，但也可能是 A 口）</li>
-      <li>选择固件</li>
-      <li>如果上一步日志没提示“检测到 RKFW 格式固件”，且设备是 MASKROM 模式，那么选择 Loader 文件</li>
-      <li>点击刷写固件按钮，此过程可能会弹出设备授权请求（MASKROM 模式最多两次），如果设备列表为空，请检查设备是否正确连接（如 USB 口是否正确，设备是否进入正确模式）</li>
-      <li>刷写完成后在“电源”菜单中选择相应操作（如重启或关机），或手动操作设备</li>
-    </ol>
-    <h5>如需检查设备状态，点击“选择 Rockchip 设备”按钮，列表为空说明没有设备连接或设备未进入正确模式。</h5>
-    <h5>如需刷写到不同的存储器，例如有 SPIROM 和 eMMC 的设备希望写入 eMMC，先加载Loader，然后切换存储，最后再刷写固件。</h5>
-  </details>
 
-  <div>
-    <label for="pick-loader">选择Loader</label>
-    <input id="pick-loader" type="file" accept=".bin" />
-  </div>
-  <div>
-    <label for="pick-file">选择固件</label>
-    <input id="pick-file" type="file" accept=".bin,.img,.gz,.xz" />
-  </div>
+  <header class="app-header">
+    <a href="#" class="header-logo">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect width="20" height="20" rx="4" fill="#388bfd"/>
+        <rect x="5" y="5" width="10" height="10" rx="1" stroke="white" stroke-width="1.4" fill="none"/>
+        <path d="M4 7h12M4 10h12M4 13h12M7 4v12M10 4v12M13 4v12" stroke="white" stroke-width="1.1" stroke-linecap="round" opacity="0.65"/>
+      </svg>
+      rkdeveloptool Web 版
+    </a>
+    <div class="header-spacer"></div>
+    <a href="https://github.com/jjm2473/rktool-webusb" target="_blank" rel="noopener noreferrer" class="header-github">
+      <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      GitHub
+    </a>
+  </header>
 
-  <div>
-    <button id="pick-device">选择 Rockchip 设备</button><span id="device-info"></span>
-  </div>
+  <main class="main">
 
-  <div>
-    <button id="dl-loader" disabled>加载Loader</button>
-    <button id="dl-file" disabled>刷写固件</button>
-    <select id="power">
-      <option value="">电源</option>
-      <option value="reboot">重启</option>
-      <option value="reboot-maskrom">重启到MASKROM</option>
-      <option value="power-off">关机</option>
-    </select>
-    <select id="change-storage">
-      <option value="">切换存储</option>
-      <option value="emmc">eMMC</option>
-      <option value="sd">SD</option>
-      <option value="spirom">SPIROM</option>
-    </select>
-  </div>
-  <div>
-    <input id="command" type="text" value="ld" style="width: 360px;" />
-    <button id="run">执行命令</button>
-  </div>
-  <div>
-    <button id="clear-output">清空日志</button>
-    <button id="copy-output">复制日志</button>
-    <button id="download-output">下载日志</button>
-    <span id="output-action-tip" aria-live="polite"></span>
-  </div>
+    <!-- Instructions -->
+    <div class="card">
+      <details class="instructions">
+        <summary>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--accent)" aria-hidden="true">
+            <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zm.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+          </svg>
+          使用说明
+          <span class="chevron">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>
+          </span>
+        </summary>
+        <div class="instructions-body">
+          <p class="warn">&#x26A0; 仅支持 Chrome/Edge 等基于 Chromium 的浏览器</p>
+          <p>&#x2713; 支持普通磁盘raw镜像（.img）、raw压缩固件（各种开源镜像，如 iStoreOS、OpenWRT 等，扩展名是.img.gz、.img.xz）、RKFW 固件（一般是安卓固件，扩展名也是.img）</p>
+          <p>&#x2713; 支持大固件刷写，使用流式加载技术+虚拟文件系统，不会把整个固件加载到内存中</p>
+          <p class="warn">&#x26A0; 不建议在 Windows 下使用，因为 Windows 下有 Rockchip 官方的图形刷机工具。且可能需要安装 WinUSB 驱动，驱动又可能跟 Rockchip 驱动冲突。自行评估风险</p>
+          <h4>一般刷机步骤：</h4>
+          <ol>
+            <li>设备进入 MASKROM 或 Loader 模式（通常是开机时按住某个按键，具体请搜索设备型号+MASKROM/Loader）</li>
+            <li>设备通过 USB 连接到电脑（通常是设备的 Type-C 接口，但也可能是 A 口）</li>
+            <li>选择固件</li>
+            <li>如果上一步日志没提示"检测到 RKFW 格式固件"，且设备是 MASKROM 模式，那么选择 Loader 文件</li>
+            <li>点击刷写固件按钮，此过程可能会弹出设备授权请求（MASKROM 模式最多两次），如果设备列表为空，请检查设备是否正确连接（如 USB 口是否正确，设备是否进入正确模式）</li>
+            <li>刷写完成后在"电源"菜单中选择相应操作（如重启或关机），或手动操作设备</li>
+          </ol>
+          <p style="margin-top:8px;">&#x1F4A1; 如需检查设备状态，点击"选择 Rockchip 设备"按钮，列表为空说明没有设备连接或设备未进入正确模式。</p>
+          <p>&#x1F4A1; 如需刷写到不同的存储器，例如有 SPIROM 和 eMMC 的设备希望写入 eMMC，先加载Loader，然后切换存储，最后再刷写固件。</p>
+        </div>
+      </details>
+    </div>
 
-  <pre id="output" style="background:#111;color:#0f0;padding:12px;min-height:220px;max-height:400px;overflow:auto;"></pre>
+    <!-- File Selection -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">文件选择</span>
+      </div>
+      <div class="card-body">
+        <div class="file-grid">
+          <div class="file-slot">
+            <div class="file-slot-label">Loader 文件 (.bin)</div>
+            <div class="file-slot-row">
+              <label for="pick-loader" class="btn btn-sm">选择文件</label>
+              <input id="pick-loader" type="file" accept=".bin" />
+              <span class="file-slot-filename" id="loader-filename">未选择</span>
+            </div>
+          </div>
+          <div class="file-slot">
+            <div class="file-slot-label">固件文件 (.img / .gz / .xz)</div>
+            <div class="file-slot-row">
+              <label for="pick-file" class="btn btn-sm">选择文件</label>
+              <input id="pick-file" type="file" accept=".bin,.img,.gz,.xz" />
+              <span class="file-slot-filename" id="firmware-filename">未选择</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <footer>
-    <a href="https://github.com/jjm2473/rktool-webusb" target="_blank" rel="noopener noreferrer">GitHub: jjm2473/rktool-webusb</a>
-  </footer>
+    <!-- Device -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">设备</span>
+      </div>
+      <div class="device-row">
+        <div class="status-ring" id="device-status-ring"></div>
+        <button id="pick-device" class="btn">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 4H1v2a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7z"/><path d="M5 11.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0zm-2 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
+          选择 Rockchip 设备
+        </button>
+        <span id="device-info" class="device-name-text"></span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">操作</span>
+      </div>
+      <div class="card-body">
+        <div class="action-row">
+          <button id="dl-loader" class="btn btn-primary" disabled>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM4.5 7.5a.5.5 0 0 0 0 1h5.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H4.5z"/></svg>
+            加载 Loader
+          </button>
+          <button id="dl-file" class="btn btn-success" disabled>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/></svg>
+            刷写固件
+          </button>
+          <div class="select-wrap">
+            <select id="power">
+              <option value="">&#x26A1; 电源</option>
+              <option value="reboot">重启</option>
+              <option value="reboot-maskrom">重启到 MASKROM</option>
+              <option value="power-off">关机</option>
+            </select>
+          </div>
+          <div class="select-wrap">
+            <select id="change-storage">
+              <option value="">&#x1F4BE; 切换存储</option>
+              <option value="emmc">eMMC</option>
+              <option value="sd">SD</option>
+              <option value="spirom">SPIROM</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Command -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">执行命令</span>
+      </div>
+      <div class="card-body">
+        <div class="command-row">
+          <input id="command" type="text" class="command-input" value="ld" placeholder="输入命令，例如：ld" />
+          <button id="run" class="btn btn-primary">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M11.596 8.697l-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/></svg>
+            执行
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log Output -->
+    <div class="card">
+      <div class="terminal-titlebar">
+        <div class="traffic-lights">
+          <div class="tl tl-red"></div>
+          <div class="tl tl-yellow"></div>
+          <div class="tl tl-green"></div>
+        </div>
+        <span class="terminal-label">日志输出</span>
+        <div class="terminal-actions">
+          <span id="output-action-tip" aria-live="polite"></span>
+          <button id="clear-output" class="btn btn-sm">清空</button>
+          <button id="copy-output" class="btn btn-sm">复制</button>
+          <button id="download-output" class="btn btn-sm">下载</button>
+        </div>
+      </div>
+      <pre id="output"></pre>
+    </div>
+
+  </main>
 
   <script type="module">
     import { createRKToolWorker } from './src/browser/worker-proxy.js?v=RKTOOLSRC_VER';
@@ -94,9 +597,10 @@
     const pickLoaderInput = document.getElementById('pick-loader');
     const dlLoaderBtn = document.getElementById('dl-loader');
     const pickFileInput = document.getElementById('pick-file');
-    const dlFileBtn = document.getElementById('dl-file');  
+    const dlFileBtn = document.getElementById('dl-file');
     const pickDeviceBtn = document.getElementById('pick-device');
     const deviceInfo = document.getElementById('device-info');
+    const deviceStatusRing = document.getElementById('device-status-ring');
     const powerSelect = document.getElementById('power');
     const changeStorageSelect = document.getElementById('change-storage');
     const runBtn = document.getElementById('run');
@@ -105,6 +609,8 @@
     const copyOutputBtn = document.getElementById('copy-output');
     const downloadOutputBtn = document.getElementById('download-output');
     const outputActionTip = document.getElementById('output-action-tip');
+    const loaderFilename = document.getElementById('loader-filename');
+    const firmwareFilename = document.getElementById('firmware-filename');
 
     let selectedLoader = null;
     let selectedFile = null;
@@ -210,12 +716,14 @@
       window.rkdev = device;
       usbConnected = true;
       deviceInfo.textContent = `${device.productName} (0x${device.productId.toString(16)})`;
+      deviceStatusRing.classList.add('connected');
       await wrapper.runCommand(['ld'], {requestDevice: false});
     }
     function onUsbDisconnect(device) {
       appendLine(`设备已断开: ${device.productName} (0x${device.productId.toString(16)})`);
       usbConnected = false;
       deviceInfo.textContent = '';
+      deviceStatusRing.classList.remove('connected');
     }
 
     appendLine('初始化中...');
@@ -281,10 +789,15 @@
 
       try {
         const loader = pickLoaderInput.files?.[0] || null;
-        if (!loader)
+        if (!loader) {
+          loaderFilename.textContent = '未选择';
+          loaderFilename.classList.remove('has-file');
           return;
+        }
         selectedLoader = await wrapper.mountFile('loader', loader);
         appendLine(`已选择Loader: ${loader.name} (${loader.size} bytes)`);
+        loaderFilename.textContent = loader.name;
+        loaderFilename.classList.add('has-file');
         dlLoaderBtn.disabled = false;
       } catch (error) {
         appendLine(String(error.message || error));
@@ -299,7 +812,7 @@
       const loaderToUse = rkfwVfs?rkfwVfs+"/MiniLoaderAll.bin":selectedLoader.virtualPath;
       try {
         await wrapper.runCommand(['db', loaderToUse], {requestDevice: !usbConnected});
-        appendLine('Loader 加载完成，可能要点击“选择 Rockchip 设备”按钮重新连接');
+        appendLine('Loader 加载完成，可能要点击"选择 Rockchip 设备"按钮重新连接');
       } catch (error) {
         appendLine(String(error.message || error));
       }
@@ -316,9 +829,14 @@
       }
       try {
         selectedFile = pickFileInput.files?.[0] || null;
-        if (!selectedFile)
+        if (!selectedFile) {
+          firmwareFilename.textContent = '未选择';
+          firmwareFilename.classList.remove('has-file');
           return;
+        }
         appendLine(`已选择固件: ${selectedFile.name} (${selectedFile.size} bytes)`);
+        firmwareFilename.textContent = selectedFile.name;
+        firmwareFilename.classList.add('has-file');
         if (await isRkfwBlob(selectedFile)) {
           appendLine('检测到 RKFW 格式固件，正在解析元数据...');
           rkfwMeta = await parseRkfwBlob(selectedFile);
@@ -444,7 +962,6 @@
     });
 
     pickDeviceBtn.addEventListener('click', async () => {
-      let device;
       try {
         await requestDevice();
       } catch (error) {
